@@ -24,9 +24,7 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
 import android.util.SparseArray
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import androidx.annotation.ColorInt
 import androidx.annotation.ColorRes
@@ -62,7 +60,7 @@ import io.sweers.catchup.injection.DaggerMap
 import io.sweers.catchup.service.api.ServiceMeta
 import io.sweers.catchup.ui.Scrollable
 import io.sweers.catchup.ui.activity.SettingsActivity
-import io.sweers.catchup.ui.fragments.service.ServiceFragment
+import io.sweers.catchup.ui.fragments.service.v2.ServiceFragment2
 import io.sweers.catchup.util.clearLightStatusBar
 import io.sweers.catchup.util.isInNightMode
 import io.sweers.catchup.util.resolveAttributeColor
@@ -78,7 +76,7 @@ fun ServiceMeta.toServiceHandler() = ServiceHandler(
   name,
   icon,
   themeColor
-) { ServiceFragment.newInstance(id) }
+) { ServiceFragment2.newInstance(id) }
 
 data class ServiceHandler(
   @StringRes val name: Int,
@@ -88,7 +86,7 @@ data class ServiceHandler(
 )
 
 @AndroidEntryPoint
-class PagerFragment : InjectingBaseFragment<FragmentPagerBinding>() {
+class PagerFragment : InjectingBaseFragment() {
 
   companion object {
     private const val SETTINGS_ACTIVITY_REQUEST = 100
@@ -96,15 +94,20 @@ class PagerFragment : InjectingBaseFragment<FragmentPagerBinding>() {
 
   @Inject
   lateinit var resolvedColorCache: ColorCache
+
   @Inject
   lateinit var serviceHandlers: Array<ServiceHandler>
+
   @Inject
   lateinit var changelogHelper: ChangelogHelper
+
   @Inject
   lateinit var catchUpPreferences: CatchUpPreferences
+
   @Inject
   lateinit var appConfig: AppConfig
 
+  private val binding by viewBinding(FragmentPagerBinding::inflate)
   private val rootLayout get() = binding.pagerFragmentRoot
   private val tabLayout get() = binding.tabLayout
   private val viewPager get() = binding.viewPager
@@ -129,9 +132,6 @@ class PagerFragment : InjectingBaseFragment<FragmentPagerBinding>() {
       }
     }
   }
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentPagerBinding =
-    FragmentPagerBinding::inflate
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
@@ -250,7 +250,11 @@ class PagerFragment : InjectingBaseFragment<FragmentPagerBinding>() {
     // adapted from http://kubaspatny.github.io/2014/09/18/viewpager-background-transition/
     viewPager.registerOnPageChangeCallback(
       object : ViewPager2.OnPageChangeCallback() {
-        override fun onPageScrolled(position: Int, positionOffset: Float, positionOffsetPixels: Int) {
+        override fun onPageScrolled(
+          position: Int,
+          positionOffset: Float,
+          positionOffsetPixels: Int
+        ) {
           if (canAnimateColor) {
             val color: Int = if (position < pagerAdapter.itemCount - 1 && position < serviceHandlers.size - 1) {
               argbEvaluator.evaluate(
@@ -290,12 +294,12 @@ class PagerFragment : InjectingBaseFragment<FragmentPagerBinding>() {
           val position = tab.position
           toolbar.setTitle(serviceHandlers[position].name)
 
-// If we're switching between more than one page, we just want to manually set the color
-// once rather than let the usual page scroll logic cycle through all the colors in a weird
-// flashy way.
+          // If we're switching between more than one page, we just want to manually set the color
+          // once rather than let the usual page scroll logic cycle through all the colors in a weird
+          // flashy way.
           if (abs(lastPosition - position) > 1) {
             canAnimateColor = false
-// Start with the current tablayout color to feel more natural if we're in between
+            // Start with the current tablayout color to feel more natural if we're in between
             @ColorInt val startColor = (tabLayout.background as ColorDrawable).color
             @ColorInt val endColor = getAndSaveColor(position)
             tabLayoutColorAnimator?.cancel()

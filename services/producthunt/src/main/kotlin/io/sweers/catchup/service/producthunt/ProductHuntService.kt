@@ -60,16 +60,18 @@ internal class ProductHuntService @Inject constructor(
   override fun meta() = serviceMeta
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
-    val page = request.pageId.toInt()
+    val page = request.pageId?.toInt() ?: 0
     return api.getPosts(page)
-      .flattenAsObservable { it }
-      .map {
-        with(it) {
+      .flattenAsObservable { it.withIndex() }
+      .map { (index, post) ->
+        with(post) {
           CatchUpItem(
             id = id,
             title = name,
             score = "▲" to votesCount,
             timestamp = createdAt,
+            serviceId = serviceMeta.id,
+            indexInResponse = index,
             author = user.name,
             tag = firstTopic,
             itemClickUrl = redirectUrl,

@@ -18,9 +18,7 @@ package io.sweers.catchup.smmry
 import android.annotation.SuppressLint
 import android.graphics.ColorFilter
 import android.os.Bundle
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.core.os.bundleOf
 import androidx.core.view.isGone
@@ -56,7 +54,7 @@ import javax.inject.Inject
  * Overlay fragment for displaying Smmry API results.
  */
 @AndroidEntryPoint
-class SmmryFragment : InjectableBaseFragment<FragmentSmmryBinding>(), ScrollableContent {
+class SmmryFragment : InjectableBaseFragment(), ScrollableContent {
 
   companion object {
     private const val ID_TITLE = "smmryfragment.title"
@@ -92,6 +90,7 @@ class SmmryFragment : InjectableBaseFragment<FragmentSmmryBinding>(), Scrollable
   @Inject
   lateinit var smmryDao: SmmryDao
 
+  private val binding by viewBinding(FragmentSmmryBinding::inflate)
   private val loadingView get() = binding.loadingView
   private val lottieView get() = binding.smmryLoading
   private val content get() = binding.contentContainer
@@ -130,9 +129,6 @@ class SmmryFragment : InjectableBaseFragment<FragmentSmmryBinding>(), Scrollable
       alreadyLoaded = getBoolean(ID_LOADED, false)
     }
   }
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentSmmryBinding =
-    FragmentSmmryBinding::inflate
 
   @SuppressLint("RestrictedApi") // False positive
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

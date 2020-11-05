@@ -21,9 +21,7 @@ import android.os.Bundle
 import android.os.Parcelable
 import android.text.style.StyleSpan
 import android.util.SparseArray
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import android.widget.Toast
 import androidx.annotation.Px
 import androidx.appcompat.app.AppCompatActivity
@@ -110,7 +108,7 @@ class AboutActivity : InjectingBaseActivity() {
 }
 
 @AndroidEntryPoint
-class AboutFragment : InjectingBaseFragment<FragmentAboutBinding>() {
+class AboutFragment : InjectingBaseFragment() {
 
   companion object {
     private const val FADE_PERCENT = 0.75F
@@ -124,6 +122,7 @@ class AboutFragment : InjectingBaseFragment<FragmentAboutBinding>() {
   @Inject
   internal lateinit var appConfig: AppConfig
 
+  private val binding by viewBinding(FragmentAboutBinding::inflate)
   private val rootLayout get() = binding.aboutFragmentRoot
   private val appBarLayout get() = binding.appbarlayout
   private val bannerContainer get() = binding.bannerContainer
@@ -135,9 +134,6 @@ class AboutFragment : InjectingBaseFragment<FragmentAboutBinding>() {
   private val viewPager get() = binding.viewPager
 
   private lateinit var compositeClickSpan: (String) -> Set<Any>
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentAboutBinding =
-    FragmentAboutBinding::inflate
 
   override fun onSaveInstanceState(outState: Bundle) {
     (appBarLayout.layoutParams as CoordinatorLayout.LayoutParams).behavior?.let { behavior ->

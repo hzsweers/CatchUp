@@ -18,7 +18,7 @@ package io.sweers.catchup.data.adapters
 import androidx.collection.ArraySet
 import com.google.common.truth.Truth.assertThat
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
+import com.squareup.moshi.adapter
 import org.junit.Test
 
 class ArrayCollectionsJsonAdapterTest {
@@ -28,7 +28,7 @@ class ArrayCollectionsJsonAdapterTest {
       .add(ArrayCollectionJsonAdapter.FACTORY)
       .build()
     val collection = listOf("one", "two", "three")
-    val adapter = moshi.adapter<List<String>>(Types.newParameterizedType(List::class.java, String::class.java))
+    val adapter = moshi.adapter<List<String>>()
     val jsonString = adapter.toJson(collection)
     assertThat(jsonString).isEqualTo("[\"one\",\"two\",\"three\"]")
     val parsedMap = adapter.fromJson(jsonString)
@@ -42,7 +42,7 @@ class ArrayCollectionsJsonAdapterTest {
       .add(ArrayCollectionJsonAdapter.FACTORY)
       .build()
     val collection = setOf("one", "two", "three")
-    val adapter = moshi.adapter<Set<String>>(Types.newParameterizedType(Set::class.java, String::class.java))
+    val adapter = moshi.adapter<Set<String>>()
     val jsonString = adapter.toJson(collection)
     assertThat(jsonString).isEqualTo("[\"one\",\"two\",\"three\"]")
     val parsedMap = adapter.fromJson(jsonString)

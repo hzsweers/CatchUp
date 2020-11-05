@@ -85,7 +85,7 @@ class OrderServicesActivity : InjectingBaseActivity() {
 }
 
 @AndroidEntryPoint
-class OrderServicesFragment : InjectableBaseFragment<FragmentOrderServicesBinding>() {
+class OrderServicesFragment : InjectableBaseFragment() {
 
   @Inject
   lateinit var serviceMetas: DaggerMap<String, ServiceMeta>
@@ -102,6 +102,7 @@ class OrderServicesFragment : InjectableBaseFragment<FragmentOrderServicesBindin
   @Inject
   internal lateinit var appConfig: AppConfig
 
+  private val binding by viewBinding(FragmentOrderServicesBinding::inflate)
   private val save get() = binding.save
   private val toolbar get() = binding.toolbar
   private val recyclerView get() = binding.list
@@ -120,9 +121,6 @@ class OrderServicesFragment : InjectableBaseFragment<FragmentOrderServicesBindin
         save.show()
       }
     }
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentOrderServicesBinding =
-    FragmentOrderServicesBinding::inflate
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)

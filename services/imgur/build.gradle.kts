@@ -31,12 +31,6 @@ android {
   }
 }
 
-kapt {
-  arguments {
-    arg("moshi.generated", "javax.annotation.Generated")
-  }
-}
-
 dependencies {
   kapt(project(":service-registry:service-registry-compiler"))
   kapt(deps.crumb.compiler)

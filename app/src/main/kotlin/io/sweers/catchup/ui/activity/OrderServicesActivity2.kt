@@ -15,6 +15,7 @@
  */
 package io.sweers.catchup.ui.activity
 
+import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -79,7 +80,6 @@ import dev.zacsweers.catchup.compose.accessibilityLabel
 import io.sweers.catchup.CatchUpPreferences
 import io.sweers.catchup.R
 import io.sweers.catchup.base.ui.InjectableBaseFragment
-import io.sweers.catchup.databinding.FragmentOrderServicesBinding
 import io.sweers.catchup.edu.Syllabus
 import io.sweers.catchup.flowFor
 import io.sweers.catchup.injection.DaggerMap
@@ -158,7 +158,7 @@ private class OrderServicesViewModel(
 }
 
 @AndroidEntryPoint
-class OrderServicesFragment2 : InjectableBaseFragment<FragmentOrderServicesBinding>() {
+class OrderServicesFragment2 : InjectableBaseFragment() {
 
   @Inject
   lateinit var serviceMetas: DaggerMap<String, ServiceMeta>
@@ -185,11 +185,11 @@ class OrderServicesFragment2 : InjectableBaseFragment<FragmentOrderServicesBindi
     }
   }
 
-  // TODO remove with viewbinding API change
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentOrderServicesBinding =
-    FragmentOrderServicesBinding::inflate
-
-  override fun initView(inflater: LayoutInflater, container: ViewGroup?): View {
+  override fun initView(
+    inflater: LayoutInflater,
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View {
     return ComposeView(inflater.context).apply {
       setLightStatusBar(appConfig)
       setContent {

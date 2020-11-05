@@ -132,7 +132,7 @@ abstract class DisplayableItemAdapter<T : DisplayableItem, VH : ViewHolder>(
 
 @AndroidEntryPoint
 class ServiceFragment :
-  InjectingBaseFragment<FragmentServiceBinding>(),
+  InjectingBaseFragment(),
   SwipeRefreshLayout.OnRefreshListener,
   Scrollable,
   DataLoadingSubject {
@@ -145,11 +145,12 @@ class ServiceFragment :
       }
   }
 
-  private val errorView get() = binding.errorContainer
-  private val errorTextView get() = binding.errorMessage
-  private val errorImage get() = binding.errorImage
+  private val binding by viewBinding(FragmentServiceBinding::inflate)
+  private val errorView get() = binding.loadStatusContainer.errorContainer
+  private val errorTextView get() = binding.loadStatusContainer.errorMessage
+  private val errorImage get() = binding.loadStatusContainer.errorImage
   private val recyclerView get() = binding.list
-  private val progress get() = binding.progress
+  private val progress get() = binding.loadStatusContainer.progress
   private val swipeRefreshLayout get() = binding.refresh
 
   private lateinit var layoutManager: LinearLayoutManager
@@ -186,9 +187,6 @@ class ServiceFragment :
   override fun toString() = "ServiceFragment: ${arguments?.get(ARG_SERVICE_KEY)}"
 
   override fun isDataLoading(): Boolean = dataLoading
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentServiceBinding =
-    FragmentServiceBinding::inflate
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
@@ -319,11 +317,11 @@ class ServiceFragment :
         detailDisplayer.bind(recyclerView, useExistingFragment = true)
       }
     }
-    binding.retryButton.setOnClickListener {
+    binding.loadStatusContainer.retryButton.setOnClickListener {
       onRetry()
     }
-    binding.errorImage.setOnClickListener {
-      onErrorClick(binding.errorImage)
+    binding.loadStatusContainer.errorImage.setOnClickListener {
+      onErrorClick(binding.loadStatusContainer.errorImage)
     }
     @ColorInt val accentColor = ContextCompat.getColor(view.context, service.meta().themeColor)
     @ColorInt val dayAccentColor = ContextCompat.getColor(
@@ -596,13 +594,7 @@ class ServiceFragment :
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
       val layoutInflater = LayoutInflater.from(parent.context)
       when (viewType) {
-        TYPE_ITEM -> return CatchUpItemViewHolder(
-          layoutInflater.inflate(
-            R.layout.list_item_general,
-            parent,
-            false
-          )
-        )
+        TYPE_ITEM -> return CatchUpItemViewHolder.create(parent)
         TYPE_LOADING_MORE -> return LoadingMoreHolder(
           layoutInflater.inflate(
             R.layout.infinite_loading,

@@ -261,11 +261,15 @@ internal class ImageAdapter(
 
     @OptIn(ExperimentalCoilApi::class)
     override fun bind(
-      item: CatchUpItem,
+      item: CatchUpItem?,
       itemClickHandler: OnClickListener?,
       markClickHandler: OnClickListener?,
       longClickHandler: OnLongClickListener?
     ) {
+      if (item == null) {
+        // TODO clear the image?
+        return
+      }
       backingImageItem?.let { imageItem ->
         image.load(imageItem.imageInfo.url) {
           memoryCacheKey(imageItem.imageInfo.cacheKey)

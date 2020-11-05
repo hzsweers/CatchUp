@@ -59,26 +59,28 @@ internal class UplabsService @Inject constructor(
   override fun meta() = serviceMeta
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
-    val page = request.pageId.toInt()
+    val page = request.pageId?.toInt() ?: 0
     return api.getPopular(page, 1)
-      .flattenAsObservable { it }
-      .map {
+      .flattenAsObservable { it.withIndex() }
+      .map { (index, post) ->
         CatchUpItem(
-          id = it.id.hashCode().toLong(),
-          title = it.name,
-          score = "▲" to it.points,
-          timestamp = it.showcasedAt,
-          author = it.makerName,
-          source = it.label,
-          tag = it.category,
-          itemClickUrl = if (it.animated) it.animatedTeaserUrl else it.teaserUrl,
+          id = post.id.hashCode().toLong(),
+          title = post.name,
+          score = "▲" to post.points,
+          timestamp = post.showcasedAt,
+          serviceId = serviceMeta.id,
+          indexInResponse = index,
+          author = post.makerName,
+          source = post.label,
+          tag = post.category,
+          itemClickUrl = if (post.animated) post.animatedTeaserUrl else post.teaserUrl,
           imageInfo = ImageInfo(
-            url = if (it.animated) it.animatedTeaserUrl else it.teaserUrl,
-            detailUrl = it.previewUrl, // Both animated and not are the preview url
-            animatable = it.animated,
-            sourceUrl = it.url,
+            url = if (post.animated) post.animatedTeaserUrl else post.teaserUrl,
+            detailUrl = post.previewUrl, // Both animated and not are the preview url
+            animatable = post.animated,
+            sourceUrl = post.url,
             bestSize = null,
-            imageId = it.id.toString()
+            imageId = post.id.toString()
           )
         )
       }

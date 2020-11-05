@@ -19,9 +19,11 @@ import android.annotation.SuppressLint
 import android.content.res.ColorStateList
 import android.graphics.drawable.Drawable
 import android.text.format.DateUtils
+import android.view.LayoutInflater
 import android.view.View
 import android.view.View.OnClickListener
 import android.view.View.OnLongClickListener
+import android.view.ViewGroup
 import androidx.annotation.ColorInt
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.constraintlayout.widget.ConstraintSet
@@ -44,11 +46,17 @@ import io.sweers.catchup.util.show
 import io.sweers.catchup.util.showIf
 import kotlinx.datetime.Instant
 
-class CatchUpItemViewHolder(
-  itemView: View
-) : ViewHolder(itemView), BindableCatchUpItemViewHolder, TemporaryScopeHolder by temporaryScope() {
+class CatchUpItemViewHolder private constructor(
+  binding: ListItemGeneralBinding
+) : ViewHolder(binding.root), BindableCatchUpItemViewHolder, TemporaryScopeHolder by temporaryScope() {
 
-  private val binding = ListItemGeneralBinding.bind(itemView)
+  companion object {
+    fun create(parent: ViewGroup): CatchUpItemViewHolder {
+      val binding = ListItemGeneralBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+      return CatchUpItemViewHolder(binding)
+    }
+  }
+
   internal val container = binding.container
   internal val tagsContainer = binding.tagsContainer
   internal val title = binding.title
@@ -91,11 +99,15 @@ class CatchUpItemViewHolder(
   }
 
   override fun bind(
-    item: CatchUpItem,
+    item: CatchUpItem?,
     itemClickHandler: OnClickListener?,
     markClickHandler: OnClickListener?,
     longClickHandler: OnLongClickListener?
   ) {
+    if (item == null) {
+      // TODO do we want to support clearing here?
+      return
+    }
     title(item.title.trim())
     score(item.score)
     timestamp(item.timestamp)

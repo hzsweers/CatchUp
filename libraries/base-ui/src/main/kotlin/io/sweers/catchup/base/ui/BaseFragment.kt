@@ -27,8 +27,10 @@ import androidx.viewbinding.ViewBinding
 import com.uber.autodispose.ScopeProvider
 import com.uber.autodispose.android.lifecycle.scope
 import io.reactivex.CompletableSource
+import kotlin.properties.ReadOnlyProperty
+import kotlin.reflect.KProperty
 
-abstract class BaseFragment<T : ViewBinding> : Fragment(), ScopeProvider, BackpressHandler {
+abstract class BaseFragment : Fragment(), ScopeProvider, BackpressHandler {
 
   companion object {
     private val DAY_MODE_CONF = Configuration().apply {
@@ -38,33 +40,49 @@ abstract class BaseFragment<T : ViewBinding> : Fragment(), ScopeProvider, Backpr
 
   @Suppress("LeakingThis")
   private lateinit var lifecycleProvider: ScopeProvider
-  protected lateinit var binding: T
   protected var dayOnlyContext: Context? = null
+
+  private var viewBindingProperty: ViewBindingProperty<*>? = null
+    set(value) {
+      require(value != null)
+      check(field == null)
+      check(view == null) { "You cannot set the binding property after the view is created" }
+      field = value
+      viewLifecycleOwnerLiveData.observeForever {
+        if (it == null) {
+          value.destroy()
+        }
+      }
+    }
 
   override fun onAttach(context: Context) {
     super.onAttach(context)
     dayOnlyContext = context.createConfigurationContext(DAY_MODE_CONF)
   }
 
-  protected abstract val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> T
-
   final override fun onCreateView(
     inflater: LayoutInflater,
     container: ViewGroup?,
     savedInstanceState: Bundle?
-  ): View {
+  ): View? {
     lifecycleProvider = viewLifecycleOwner.scope()
-    return initView(inflater, container)
+    return initView(inflater, container, savedInstanceState)
   }
 
   // TODO remove when compose fragment is separated
   protected open fun initView(
     inflater: LayoutInflater,
-    container: ViewGroup?
-  ): View {
-    binding = bindingInflater(inflater, container, false)
-    return binding.root
+    container: ViewGroup?,
+    savedInstanceState: Bundle?
+  ): View? {
+    return viewBindingProperty?.inflate(inflater, container)
+      ?: super.onCreateView(inflater, container, savedInstanceState)
   }
+
+  protected fun <VB : ViewBinding> viewBinding(
+    creator: (LayoutInflater, ViewGroup?, Boolean) -> VB
+  ): ReadOnlyProperty<BaseFragment, VB> = ViewBindingProperty(creator)
+    .also { viewBindingProperty = it }
 
   override fun onDestroyView() {
     dayOnlyContext = null
@@ -89,6 +107,30 @@ abstract class BaseFragment<T : ViewBinding> : Fragment(), ScopeProvider, Backpr
       }
     }
     return false
+  }
+}
+
+private class ViewBindingProperty<VB : ViewBinding>(
+  private val creator: (LayoutInflater, ViewGroup?, Boolean) -> VB
+) : ReadOnlyProperty<Fragment, VB> {
+  private var binding: VB? = null
+
+  fun inflate(inflater: LayoutInflater, root: ViewGroup?): View {
+    check(binding == null)
+    return creator(inflater, root, false)
+      .also { binding = it }
+      .root
+  }
+
+  fun destroy() {
+    binding = null
+  }
+
+  override fun getValue(thisRef: Fragment, property: KProperty<*>): VB {
+    if (thisRef.view == null) {
+      error("View is not attached")
+    }
+    return binding ?: error("The binding and fragment view are not in sync. This shouldn't happen.")
   }
 }
 

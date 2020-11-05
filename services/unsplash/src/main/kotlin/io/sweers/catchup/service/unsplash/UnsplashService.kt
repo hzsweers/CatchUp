@@ -61,28 +61,30 @@ internal class UnsplashService @Inject constructor(
   override fun meta() = serviceMeta
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
-    val page = request.pageId.toInt()
+    val page = request.pageId?.toInt() ?: 0
     return api.getPhotos(page, 50)
-      .flattenAsObservable { it }
-      .map {
+      .flattenAsObservable { it.withIndex() }
+      .map { (index, photo) ->
         CatchUpItem(
-          id = it.id.hashCode().toLong(),
+          id = photo.id.hashCode().toLong(),
           title = "",
           score =
             "\u2665\uFE0E" // Because lol: https://code.google.com/p/android/issues/detail?id=231068
-              to it.likes,
-          timestamp = it.createdAt,
-          author = it.user.name,
+              to photo.likes,
+          timestamp = photo.createdAt,
+          serviceId = serviceMeta.id,
+          indexInResponse = index,
+          author = photo.user.name,
           source = null,
           tag = null,
-          itemClickUrl = it.urls.full,
+          itemClickUrl = photo.urls.full,
           imageInfo = ImageInfo(
-            url = it.urls.small,
-            detailUrl = it.urls.raw,
+            url = photo.urls.small,
+            detailUrl = photo.urls.raw,
             animatable = false,
-            sourceUrl = it.links.html,
+            sourceUrl = photo.links.html,
             bestSize = null,
-            imageId = it.id
+            imageId = photo.id
           )
         )
       }

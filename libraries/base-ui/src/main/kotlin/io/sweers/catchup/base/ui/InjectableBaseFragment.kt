@@ -15,6 +15,4 @@
  */
 package io.sweers.catchup.base.ui
 
-import androidx.viewbinding.ViewBinding
-
-abstract class InjectableBaseFragment<T : ViewBinding> : BaseFragment<T>()
+abstract class InjectableBaseFragment : BaseFragment()

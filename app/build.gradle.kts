@@ -174,7 +174,6 @@ kapt {
   arguments {
     arg("room.schemaLocation", "$projectDir/schemas")
     arg("room.incremental", "true")
-    arg("moshi.generated", "javax.annotation.Generated")
     arg("dagger.experimentalDaggerErrorMessages", "enabled")
   }
 }
@@ -388,6 +387,7 @@ dependencies {
   implementation(deps.android.androidx.fragment)
   implementation(deps.android.androidx.fragmentKtx)
   debugImplementation(deps.android.androidx.drawerLayout)
+  implementation(deps.android.androidx.paging.runtime)
   implementation(deps.android.androidx.preference)
   implementation(deps.android.androidx.preferenceKtx)
   implementation(deps.android.androidx.viewPager2)

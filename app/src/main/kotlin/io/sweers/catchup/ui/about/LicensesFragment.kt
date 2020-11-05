@@ -42,7 +42,7 @@ import com.apollographql.apollo.exception.ApolloException
 import com.google.android.material.snackbar.Snackbar
 import com.squareup.moshi.JsonClass
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
+import com.squareup.moshi.adapter
 import dagger.hilt.android.AndroidEntryPoint
 import io.sweers.catchup.R
 import io.sweers.catchup.R.layout
@@ -100,7 +100,7 @@ import kotlin.LazyThreadSafetyMode.NONE
  * A fragment that displays oss licenses.
  */
 @AndroidEntryPoint
-class LicensesFragment : InjectableBaseFragment<FragmentLicensesBinding>(), Scrollable {
+class LicensesFragment : InjectableBaseFragment(), Scrollable {
 
   @Inject
   lateinit var apolloClient: ApolloClient
@@ -117,14 +117,13 @@ class LicensesFragment : InjectableBaseFragment<FragmentLicensesBinding>(), Scro
   private val dimenSize by lazy(NONE) {
     resources.getDimensionPixelSize(R.dimen.avatar)
   }
+
+  private val binding by viewBinding(FragmentLicensesBinding::inflate)
   private val progressBar get() = binding.progress
   private val recyclerView get() = binding.list
 
   private lateinit var adapter: Adapter
   private lateinit var layoutManager: StickyHeadersLinearLayoutManager<Adapter>
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentLicensesBinding =
-    FragmentLicensesBinding::inflate
 
   override fun onSaveInstanceState(outState: Bundle) {
     super.onSaveInstanceState(outState)
@@ -168,9 +167,7 @@ class LicensesFragment : InjectableBaseFragment<FragmentLicensesBinding>(), Scro
   private suspend fun requestItems(): List<OssBaseItem> {
     // Start with a fetch of our github entries from assets
     val githubEntries = withContext(Dispatchers.Default) {
-      val adapter = moshi.adapter<List<OssGitHubEntry>>(
-        Types.newParameterizedType(List::class.java, OssGitHubEntry::class.java)
-      )
+      val adapter = moshi.adapter<List<OssGitHubEntry>>()
       val regular = adapter.fromJson(resources.assets.open("licenses_github.json").source().buffer())!!
       val generated = adapter.fromJson(resources.assets.open("generated_licenses.json").source().buffer())!!
       return@withContext regular + generated
@@ -239,9 +236,7 @@ class LicensesFragment : InjectableBaseFragment<FragmentLicensesBinding>(), Scro
         )
       }
       .onStart {
-        moshi.adapter<List<OssItem>>(
-          Types.newParameterizedType(List::class.java, OssItem::class.java)
-        )
+        moshi.adapter<List<OssItem>>()
           .fromJson(resources.assets.open("licenses_mixins.json").source().buffer())!!
           .forEach { emit(it) }
       }
@@ -264,23 +259,19 @@ class LicensesFragment : InjectableBaseFragment<FragmentLicensesBinding>(), Scro
       .let {
         val collector = mutableListOf<OssBaseItem>()
         with(it[0]) {
-          collector.add(
-            OssItemHeader(
-              name = author,
-              avatarUrl = avatarUrl
-            )
+          collector += OssItemHeader(
+            name = author,
+            avatarUrl = avatarUrl
           )
         }
         it.fold(it[0].author) { lastAuthor, currentItem ->
           if (currentItem.author != lastAuthor) {
-            collector.add(
-              OssItemHeader(
-                name = currentItem.author,
-                avatarUrl = currentItem.avatarUrl
-              )
+            collector += OssItemHeader(
+              name = currentItem.author,
+              avatarUrl = currentItem.avatarUrl
             )
           }
-          collector.add(currentItem)
+          collector += currentItem
           currentItem.author
         }
         collector
@@ -417,10 +408,7 @@ class LicensesFragment : InjectableBaseFragment<FragmentLicensesBinding>(), Scro
             .inflate(layout.about_header_item, parent, false)
         )
       } else {
-        CatchUpItemViewHolder(
-          LayoutInflater.from(parent.context)
-            .inflate(layout.list_item_general, parent, false)
-        )
+        CatchUpItemViewHolder.create(parent)
       }
     }
 

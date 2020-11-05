@@ -87,14 +87,16 @@ internal class GitHubService @Inject constructor(
     return gitHubApi
       .get()
       .getTrending(language = All, since = DAILY)
-      .flattenAsObservable { it }
-      .map {
-        with(it) {
+      .flattenAsObservable { it.withIndex() }
+      .map { (index, trendingItem) ->
+        with(trendingItem) {
           CatchUpItem(
             id = "$author/$repoName".hashCode().toLong(),
             title = "$repoName — $description",
             author = author,
             timestamp = null,
+            serviceId = serviceMeta.id,
+            indexInResponse = index,
             score = "★" to stars,
             tag = language,
             itemClickUrl = url,
@@ -127,7 +129,7 @@ internal class GitHubService @Inject constructor(
           direction = OrderDirection.DESC,
           field_ = LanguageOrderField.SIZE
         ),
-        Input.fromNullable(request.pageId.nullIfBlank())
+        Input.fromNullable(request.pageId?.nullIfBlank())
       )
     )
       .toBuilder()
@@ -143,9 +145,9 @@ internal class GitHubService @Inject constructor(
       }
       .map { it.data!! }
       .flatMap { (search) ->
-        Observable.fromIterable(search.nodes?.mapNotNull { it?.asRepository }.orEmpty())
-          .map {
-            with(it) {
+        Observable.fromIterable(search.nodes?.mapNotNull { it?.asRepository }.orEmpty().withIndex())
+          .map { (index, repo) ->
+            with(repo) {
               val description = description
                 ?.let { " — ${emojiMarkdownConverter.get().replaceMarkdownEmojisIn(it)}" }
                 .orEmpty()
@@ -155,6 +157,8 @@ internal class GitHubService @Inject constructor(
                 title = "$name$description",
                 score = "★" to stargazers.totalCount,
                 timestamp = createdAt,
+                serviceId = serviceMeta.id,
+                indexInResponse = index,
                 author = owner.login,
                 tag = languages?.nodes?.firstOrNull()?.name,
                 source = licenseInfo?.name,

@@ -64,24 +64,27 @@ internal class RedditService @Inject constructor(
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
     // We special case the front page
-    return api.frontPage(25, request.pageId.nullIfBlank())
+    return api.frontPage(25, request.pageId?.nullIfBlank())
       .map { redditListingRedditResponse ->
         @Suppress("UNCHECKED_CAST")
         val data = (redditListingRedditResponse.data.children as List<RedditLink>)
-          .map {
+          .withIndex()
+          .map { (index, submission) ->
             CatchUpItem(
-              id = it.id.hashCode().toLong(),
-              title = it.title,
-              score = "+" to it.score,
-              timestamp = it.createdUtc,
-              author = "/u/" + it.author,
-              source = it.domain ?: "self",
-              tag = it.subreddit,
-              itemClickUrl = it.url,
-              summarizationInfo = SummarizationInfo.from(it.url, it.selftext),
+              id = submission.id.hashCode().toLong(),
+              title = submission.title,
+              score = "+" to submission.score,
+              timestamp = submission.createdUtc,
+              serviceId = serviceMeta.id,
+              indexInResponse = index,
+              author = "/u/" + submission.author,
+              source = submission.domain ?: "self",
+              tag = submission.subreddit,
+              itemClickUrl = submission.url,
+              summarizationInfo = SummarizationInfo.from(submission.url, submission.selftext),
               mark = createCommentMark(
-                count = it.commentsCount,
-                clickUrl = "https://reddit.com/comments/${it.id}"
+                count = submission.commentsCount,
+                clickUrl = "https://reddit.com/comments/${submission.id}"
               )
             )
           }

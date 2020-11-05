@@ -57,28 +57,30 @@ internal class DribbbleService @Inject constructor(
   override fun meta() = serviceMeta
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
-    val page = request.pageId.toInt()
+    val page = request.pageId?.toInt() ?: 0
     return api.getPopular(page, 50)
-      .flattenAsObservable { it }
-      .map {
+      .flattenAsObservable { it.withIndex() }
+      .map { (index, shot) ->
         CatchUpItem(
-          id = it.id,
+          id = shot.id,
           title = "",
-          score = "+" to it.likesCount.toInt(),
-          timestamp = it.createdAt,
-          author = "/u/" + it.user.name,
+          score = "+" to shot.likesCount.toInt(),
+          timestamp = shot.createdAt,
+          serviceId = serviceMeta.id,
+          indexInResponse = index,
+          author = "/u/" + shot.user.name,
           source = null,
           tag = null,
-          itemClickUrl = it.images.best(),
+          itemClickUrl = shot.images.best(),
           imageInfo = ImageInfo(
-            it.images.normal,
-            it.images.best(true),
-            it.animated,
-            it.htmlUrl,
-            it.images.bestSize(),
-            it.id.toString()
+            shot.images.normal,
+            shot.images.best(true),
+            shot.animated,
+            shot.htmlUrl,
+            shot.images.bestSize(),
+            shot.id.toString()
           ),
-          mark = createCommentMark(count = it.commentsCount.toInt())
+          mark = createCommentMark(count = shot.commentsCount.toInt())
         )
       }
       .toList()

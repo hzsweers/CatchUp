@@ -66,9 +66,9 @@ internal class MediumService @Inject constructor(
   override fun fetchPage(request: DataRequest): Single<DataResult> {
     return api.top()
       .concatMapEager { references ->
-        Observable.fromIterable(references.post.values)
-          .map { post ->
-            MediumPost(
+        Observable.fromIterable(references.post.values.withIndex())
+          .map { (index, post) ->
+            index to MediumPost(
               post = post,
               user = references.user[post.creatorId]
                 ?: throw IllegalStateException("Missing user on post!"),
@@ -76,23 +76,25 @@ internal class MediumService @Inject constructor(
             )
           }
       }
-      .map {
-        with(it) {
+      .map { (index, post) ->
+        with(post) {
           val url = constructUrl()
           CatchUpItem(
-            id = post.id.hashCode().toLong(),
-            title = post.title,
+            id = post.post.id.hashCode().toLong(),
+            title = post.post.title,
             score =
               "\u2665\uFE0E" // Because lol: https://code.google.com/p/android/issues/detail?id=231068
-                to post.virtuals.recommends,
-            timestamp = post.createdAt,
+                to post.post.virtuals.recommends,
+            timestamp = post.post.createdAt,
+            serviceId = serviceMeta.id,
+            indexInResponse = index,
             author = user.name,
             tag = collection?.name,
-            source = "\u2605".takeIf { post.isSubscriptionLocked }, // TODO use "★" directly?
+            source = "\u2605".takeIf { post.post.isSubscriptionLocked }, // TODO use "★" directly?
             itemClickUrl = url,
             summarizationInfo = SummarizationInfo.from(url),
             mark = createCommentMark(
-              count = post.virtuals.responsesCreatedCount,
+              count = post.post.virtuals.responsesCreatedCount,
               clickUrl = constructCommentsUrl()
             )
           )

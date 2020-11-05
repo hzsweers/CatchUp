@@ -17,7 +17,6 @@ package io.sweers.catchup.ui.about
 
 import android.os.Bundle
 import android.os.Parcelable
-import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.OvershootInterpolator
@@ -33,7 +32,6 @@ import io.reactivex.Single
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
 import io.sweers.catchup.R
-import io.sweers.catchup.R.layout
 import io.sweers.catchup.base.ui.InjectableBaseFragment
 import io.sweers.catchup.data.LinkManager
 import io.sweers.catchup.data.github.RepoReleasesQuery
@@ -53,7 +51,7 @@ import java.io.IOException
 import javax.inject.Inject
 
 @AndroidEntryPoint
-class ChangelogFragment : InjectableBaseFragment<FragmentChangelogBinding>(), Scrollable {
+class ChangelogFragment : InjectableBaseFragment(), Scrollable {
 
   @Inject
   lateinit var apolloClient: ApolloClient
@@ -62,14 +60,12 @@ class ChangelogFragment : InjectableBaseFragment<FragmentChangelogBinding>(), Sc
   @Inject
   internal lateinit var markdownConverter: EmojiMarkdownConverter
 
+  private val binding by viewBinding(FragmentChangelogBinding::inflate)
   private val progressBar get() = binding.progress
   private val recyclerView get() = binding.list
 
   private lateinit var layoutManager: LinearLayoutManager
   private lateinit var adapter: ChangelogAdapter
-
-  override val bindingInflater: (LayoutInflater, ViewGroup?, Boolean) -> FragmentChangelogBinding =
-    FragmentChangelogBinding::inflate
 
   override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
     super.onViewCreated(view, savedInstanceState)
@@ -159,10 +155,7 @@ class ChangelogFragment : InjectableBaseFragment<FragmentChangelogBinding>(), Sc
     override fun getItemCount() = items.size
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): CatchUpItemViewHolder {
-      return CatchUpItemViewHolder(
-        LayoutInflater.from(parent.context)
-          .inflate(layout.list_item_general, parent, false)
-      )
+      return CatchUpItemViewHolder.create(parent)
     }
 
     override fun onBindViewHolder(holder: CatchUpItemViewHolder, position: Int) {

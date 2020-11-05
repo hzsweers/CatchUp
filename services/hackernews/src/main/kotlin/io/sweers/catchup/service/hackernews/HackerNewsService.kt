@@ -71,8 +71,10 @@ internal class HackerNewsService @Inject constructor(
   override fun meta() = serviceMeta
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
-    val page = request.pageId.toInt()
+    val page = request.pageId?.toInt() ?: 0
     val itemsPerPage = 25 // TODO Pref this
+    // TODO this is broken right now due to missing kotlin IR support for all-open
+    return Single.just(DataResult(emptyList(), null, true))
     return Single
       .create { emitter: SingleEmitter<DataSnapshot> ->
         val listener = object : ValueEventListener {
@@ -114,16 +116,20 @@ internal class HackerNewsService @Inject constructor(
           ref.addValueEventListener(listener)
         }
       }
-      .filter { it.hasChild("title") } // Some HN items are just empty junk
-      .map { HackerNewsStory.create(it) }
-      .map {
-        val url = it.url
-        with(it) {
+      .toList()
+      .flattenAsObservable { it.withIndex() }
+      .filter { it.value.hasChild("title") } // Some HN items are just empty junk
+      .map { it.index to HackerNewsStory.create(it.value) }
+      .map { (index, story) ->
+        val url = story.url
+        with(story) {
           CatchUpItem(
             id = id,
             title = title,
             score = "+" to score,
             timestamp = realTime(),
+            serviceId = serviceMeta.id,
+            indexInResponse = index,
             author = by,
             source = url?.let { it.toHttpUrlOrNull()!!.host },
             tag = realType()?.tag(nullIfStory = true),

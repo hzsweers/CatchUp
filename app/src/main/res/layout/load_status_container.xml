@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/load_status_container"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
+<!--  <ProgressBar-->
+<!--      android:id="@+id/progress"-->
+<!--      style="@style/Widget.AppCompat.ProgressBar"-->
+<!--      android:layout_width="wrap_content"-->
+<!--      android:layout_height="wrap_content"-->
+<!--      android:layout_gravity="center"-->
+<!--      android:indeterminate="true"-->
+<!--      />-->
+  <ProgressBar
+      android:id="@+id/progress"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_marginTop="32dp"
+      android:layout_marginBottom="64dp"
+      android:layout_gravity="center"
+      android:indeterminate="true"
+      android:indeterminateTint="?android:textColorSecondary"
+      android:indeterminateTintMode="src_in"
+      />
+  <LinearLayout
+      android:id="@+id/error_container"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_gravity="center"
+      android:gravity="center_horizontal"
+      android:orientation="vertical"
+      android:visibility="gone"
+      tools:visibility="visible"
+      >
+
+    <androidx.appcompat.widget.AppCompatImageView
+        android:id="@+id/error_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clickable="true"
+        android:focusable="true"
+        tools:src="@drawable/avd_no_connection"
+        />
+
+    <androidx.appcompat.widget.AppCompatTextView
+        android:id="@+id/error_message"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
+        tools:text="Something went wrong :("
+        />
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/retry_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="@string/retry"
+        />
+
+  </LinearLayout>
+</FrameLayout>

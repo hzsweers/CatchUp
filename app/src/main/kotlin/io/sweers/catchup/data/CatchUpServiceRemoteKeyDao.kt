@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2019. Zac Sweers
+ * Copyright (C) 2020. Zac Sweers
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,25 +15,28 @@
  */
 package io.sweers.catchup.data
 
-import androidx.paging.PagingSource
 import androidx.room.Dao
+import androidx.room.Entity
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
+import androidx.room.PrimaryKey
 import androidx.room.Query
-import io.sweers.catchup.service.api.CatchUpItem
 
 @Dao
-interface ServiceDao {
-
+interface CatchUpServiceRemoteKeyDao {
   @Insert(onConflict = OnConflictStrategy.REPLACE)
-  suspend fun insertAll(posts: List<CatchUpItem>)
+  suspend fun insert(keys: CatchUpServiceRemoteKey)
 
-  @Query("SELECT * FROM items WHERE serviceId = :serviceId ORDER BY generatedId ASC")
-  fun itemsByService(serviceId: String): PagingSource<Int, CatchUpItem>
+  @Query("SELECT * FROM remote_keys WHERE serviceId = :serviceId")
+  suspend fun remoteKeyByService(serviceId: String): CatchUpServiceRemoteKey
 
-  @Query("DELETE FROM items WHERE serviceId = :serviceId")
+  @Query("DELETE FROM remote_keys WHERE serviceId = :serviceId")
   suspend fun deleteByService(serviceId: String)
-
-  @Query("SELECT MAX(indexInResponse) + 1 FROM items WHERE serviceId = :serviceId")
-  suspend fun getNextIndexInService(serviceId: String): Int
 }
+
+@Entity(tableName = "remote_keys")
+data class CatchUpServiceRemoteKey(
+  @PrimaryKey
+  val serviceId: String,
+  val nextPageKey: String?
+)

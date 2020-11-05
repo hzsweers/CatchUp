@@ -27,15 +27,16 @@ import kotlinx.datetime.Instant
 
 @Database(
   entities = [
-    ServicePage::class,
-    CatchUpItem::class
+    CatchUpItem::class,
+    CatchUpServiceRemoteKey::class
   ],
-  version = 5
+  version = 6
 )
 @TypeConverters(CatchUpConverters::class)
 abstract class CatchUpDatabase : RoomDatabase() {
 
   abstract fun serviceDao(): ServiceDao
+  abstract fun remoteKeys(): CatchUpServiceRemoteKeyDao
 
   companion object {
 
@@ -76,7 +77,7 @@ internal class CatchUpConverters {
     return if (listString.isNullOrBlank()) {
       emptyList()
     } else {
-      listString.split(",").asSequence().toList().map { it.toLong() }
+      listString.split(",").toList().map { it.toLong() }
     }
   }
 

@@ -31,11 +31,9 @@ import dagger.hilt.android.AndroidEntryPoint
 import dagger.hilt.android.components.ActivityComponent
 import dagger.hilt.android.scopes.ActivityScoped
 import dagger.multibindings.Multibinds
-import dev.zacsweers.catchup.appconfig.AppConfig
 import io.sweers.catchup.R
 import io.sweers.catchup.base.ui.InjectingBaseActivity
 import io.sweers.catchup.data.LinkManager
-import io.sweers.catchup.data.ServiceDao
 import io.sweers.catchup.databinding.ActivityMainBinding
 import io.sweers.catchup.edu.Syllabus
 import io.sweers.catchup.injection.DaggerMap
@@ -45,7 +43,6 @@ import io.sweers.catchup.service.api.Service
 import io.sweers.catchup.service.api.ServiceMeta
 import io.sweers.catchup.ui.DetailDisplayer
 import io.sweers.catchup.ui.fragments.PagerFragment
-import io.sweers.catchup.ui.fragments.service.StorageBackedService
 import io.sweers.catchup.util.customtabs.CustomTabActivityHelper
 import me.saket.inboxrecyclerview.InboxRecyclerView
 import me.saket.inboxrecyclerview.dimming.TintPainter
@@ -116,21 +113,16 @@ class MainActivity : InjectingBaseActivity() {
       @Provides
       @FinalServices
       fun provideFinalServices(
-        serviceDao: ServiceDao,
         serviceMetas: DaggerMap<String, ServiceMeta>,
         sharedPreferences: SharedPreferences,
-        services: DaggerMap<String, Provider<Service>>,
-        appConfig: AppConfig
+        services: DaggerMap<String, Provider<Service>>
       ): Map<String, Provider<Service>> {
         return services
-          .filter {
-            serviceMetas.getValue(it.key).enabled && sharedPreferences.getBoolean(
-              serviceMetas.getValue(it.key).enabledPreferenceKey,
+          .filter { (serviceId, _) ->
+            serviceMetas.getValue(serviceId).enabled && sharedPreferences.getBoolean(
+              serviceMetas.getValue(serviceId).enabledPreferenceKey,
               true
             )
-          }
-          .mapValues { (_, value) ->
-            Provider { StorageBackedService(serviceDao, value.get(), appConfig) }
           }
       }
     }

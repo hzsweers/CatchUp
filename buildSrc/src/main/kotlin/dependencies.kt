@@ -123,6 +123,11 @@ object deps {
         const val ktx = "androidx.lifecycle:lifecycle-livedata-ktx:$version"
       }
 
+      object paging {
+        private const val VERSION = "3.0.0-alpha08"
+        const val runtime = "androidx.paging:paging-runtime:$VERSION"
+      }
+
       object room {
         private const val version = "2.3.0-alpha02"
         const val apt = "androidx.room:room-compiler:$version"
@@ -188,7 +193,7 @@ object deps {
 
   object build {
     val ci get() = System.getenv("GITHUB_WORKFLOW") != null
-    const val coreLibraryDesugaring = "com.android.tools:desugar_jdk_libs:1.0.9"
+    const val coreLibraryDesugaring = "com.android.tools:desugar_jdk_libs:1.0.10"
 
     fun gitSha(project: Project): String {
       // query git for the SHA, Tag and commit count. Use these to automate versioning.

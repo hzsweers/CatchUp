@@ -27,8 +27,8 @@ kotlinDslPluginOptions {
 object SharedBuildVersions {
   const val agp = "4.2.0-alpha15"
   const val kotlin = "1.4.10"
-  const val moshi = "1.10.0"
-  const val okio = "2.8.0"
+  const val moshi = "1.11.0"
+  const val okio = "2.9.0"
   const val kotlinJvmTarget = "1.8"
   val kotlinCompilerArgs = listOf(
       "-progressive",
@@ -43,6 +43,7 @@ object SharedBuildVersions {
       "-Xopt-in=kotlin.time.ExperimentalTime",
       "-Xopt-in=kotlinx.coroutines.FlowPreview",
       "-Xopt-in=kotlinx.coroutines.ExperimentalCoroutinesApi",
+      "-Xopt-in=androidx.paging.ExperimentalPagingApi",
       // New type inference front end. Matches IDE behavior, allows new behaviors and should also be a perf improvement.
       // Was originally intended to be teh default in 1.4, but TBD.
       "-Xnew-inference",

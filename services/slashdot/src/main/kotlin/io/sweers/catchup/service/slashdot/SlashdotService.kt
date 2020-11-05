@@ -62,21 +62,23 @@ internal class SlashdotService @Inject constructor(
   override fun fetchPage(request: DataRequest): Single<DataResult> {
     return service.main()
       .map(Feed::itemList)
-      .flattenAsObservable { it }
-      .map { (title, id, _, summary, updated, section, comments, author, department) ->
+      .flattenAsObservable { it.withIndex() }
+      .map { (index, feedItem) ->
         CatchUpItem(
-          id = id.hashCode().toLong(),
-          title = title,
+          id = feedItem.id.hashCode().toLong(),
+          title = feedItem.title,
           score = null,
-          timestamp = updated,
-          author = author.name,
-          source = department,
-          tag = section,
-          itemClickUrl = id,
-          summarizationInfo = SummarizationInfo(summary.substringBefore("<p>"), NONE),
+          timestamp = feedItem.updated,
+          serviceId = serviceMeta.id,
+          indexInResponse = index,
+          author = feedItem.author.name,
+          source = feedItem.department,
+          tag = feedItem.section,
+          itemClickUrl = feedItem.id,
+          summarizationInfo = SummarizationInfo(feedItem.summary.substringBefore("<p>"), NONE),
           mark = createCommentMark(
-            count = comments,
-            clickUrl = "$id#comments"
+            count = feedItem.comments,
+            clickUrl = "${feedItem.id}#comments"
           )
         )
       }

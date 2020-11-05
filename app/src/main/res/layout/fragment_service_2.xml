@@ -29,7 +29,7 @@
       >
 
     <!-- Transparent background because scrollbars don't show up without it -->
-    <me.saket.inboxrecyclerview.InboxRecyclerView
+    <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/list"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -43,6 +43,4 @@
         />
 
   </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-  <include android:id="@id/load_status_container" layout="@layout/load_status_container"/>
 </FrameLayout>

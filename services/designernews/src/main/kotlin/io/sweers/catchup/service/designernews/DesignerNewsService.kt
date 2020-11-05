@@ -60,18 +60,20 @@ internal class DesignerNewsService @Inject constructor(
   override fun meta() = serviceMeta
 
   override fun fetchPage(request: DataRequest): Single<DataResult> {
-    val page = request.pageId.toInt()
+    val page = request.pageId?.toInt() ?: 0
     return api.getTopStories(page)
       .flatMapObservable { stories ->
-        Observable.fromIterable(stories)
+        Observable.fromIterable(stories.withIndex())
       }
-      .map { story ->
+      .map { (index, story) ->
         with(story) {
           CatchUpItem(
             id = id.toLong(),
             title = title,
             score = "▲" to voteCount,
             timestamp = createdAt,
+            serviceId = serviceMeta.id,
+            indexInResponse = index,
             source = hostname,
             tag = badge,
             itemClickUrl = url,

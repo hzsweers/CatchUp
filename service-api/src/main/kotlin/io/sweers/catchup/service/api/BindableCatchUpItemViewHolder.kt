@@ -27,7 +27,7 @@ interface BindableCatchUpItemViewHolder : TemporaryScopeHolder {
   }
 
   fun bind(
-    item: CatchUpItem,
+    item: CatchUpItem?,
     itemClickHandler: OnClickListener? = null,
     markClickHandler: OnClickListener? = null,
     longClickHandler: OnLongClickListener? = null

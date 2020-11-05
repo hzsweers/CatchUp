@@ -24,12 +24,6 @@ apply {
   from(rootProject.file("gradle/config-kotlin-sources.gradle"))
 }
 
-kapt {
-  arguments {
-    arg("moshi.generated", "javax.annotation.Generated")
-  }
-}
-
 dependencies {
   kapt(project(":service-registry:service-registry-compiler"))
   kapt(deps.crumb.compiler)
