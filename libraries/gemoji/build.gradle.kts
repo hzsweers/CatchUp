@@ -17,26 +17,23 @@
 plugins {
   id("com.android.library")
   kotlin("android")
-  kotlin("kapt")
+  id(deps.ksp.pluginId)
+  id(deps.anvil.pluginId)
 }
 
-apply {
-  from(rootProject.file("gradle/config-kotlin-sources.gradle"))
+anvil {
+  generateDaggerFactories = true
 }
 
-kapt {
-  arguments {
-    arg("room.schemaLocation", "$projectDir/schemas")
-    arg("room.incremental", "true")
-  }
+ksp {
+  arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 dependencies {
   implementation(project(":libraries:util"))
 
-  kapt(deps.android.androidx.room.xerial)
-  kapt(deps.android.androidx.room.apt)
-  kapt(deps.dagger.apt.compiler)
+  ksp(deps.android.androidx.room.xerial)
+  ksp(deps.android.androidx.room.apt)
   compileOnly(deps.misc.jsr250)
 
   api(deps.android.androidx.room.runtime)
