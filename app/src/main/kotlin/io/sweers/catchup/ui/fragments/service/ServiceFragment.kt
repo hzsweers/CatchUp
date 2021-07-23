@@ -81,8 +81,7 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.SendChannel
-import kotlinx.coroutines.flow.asFlow
-import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import me.saket.inboxrecyclerview.page.SimplePageStateChangeCallbacks
 import retrofit2.HttpException
@@ -101,7 +100,7 @@ abstract class DisplayableItemAdapter<T : DisplayableItem, VH : ViewHolder>(
   }
 
   protected val data = mutableListOf<T>()
-  private val clicksChannel = BroadcastChannel<UrlMeta>(Channel.BUFFERED)
+  private val _clicksFlow = MutableSharedFlow<UrlMeta>()
 
   internal fun update(loadResult: LoadResult<T>) {
     when (loadResult) {
@@ -117,10 +116,9 @@ abstract class DisplayableItemAdapter<T : DisplayableItem, VH : ViewHolder>(
     }
   }
 
-  @FlowPreview
-  fun clicksFlow() = clicksChannel.asFlow()
+  fun clicksFlow(): Flow<UrlMeta> = _clicksFlow.asSharedFlow()
 
-  protected fun clicksChannel(): SendChannel<UrlMeta> = clicksChannel
+  protected fun clicksReceiver() = _clicksFlow::tryEmit
 
   fun getItems(): List<DisplayableItem> = data
 
@@ -166,20 +164,26 @@ class ServiceFragment :
 
   @Inject
   internal lateinit var linkManager: LinkManager
+
   @TextViewPool
   @Inject
   lateinit var textViewPool: RecycledViewPool
+
   @VisualViewPool
   @Inject
   lateinit var visualViewPool: RecycledViewPool
+
   @FinalServices
   @Inject
   lateinit var services: DaggerMap<String, Provider<Service>>
   private lateinit var service: Service
+
   @Inject
   lateinit var fragmentCreators: DaggerMap<Class<out Fragment>, Provider<Fragment>>
+
   @Inject
   lateinit var detailDisplayer: DetailDisplayer
+
   @Inject
   lateinit var appConfig: AppConfig
 
@@ -235,13 +239,13 @@ class ServiceFragment :
   ): DisplayableItemAdapter<out DisplayableItem, ViewHolder> {
     if (service.meta().isVisual) {
       val spanConfig = (service.rootService() as VisualService).spanConfig()
-      val adapter = ImageAdapter(context, spanConfig.spanCount) { item, holder, clicksChannel ->
+      val adapter = ImageAdapter(context, spanConfig.spanCount) { item, holder, clicksReceiver ->
         service.bindItemView(
           item.realItem(),
           holder,
-          clicksChannel,
-          clicksChannel,
-          clicksChannel
+          clicksReceiver,
+          clicksReceiver,
+          clicksReceiver
         )
       }
       // TODO adapt this for Coil
@@ -252,13 +256,13 @@ class ServiceFragment :
 //      recyclerView.addOnScrollListener(preloader)
       return adapter
     } else {
-      return TextAdapter { item, holder, clicksChannel ->
+      return TextAdapter { item, holder, clicksFlow ->
         service.bindItemView(
           item,
           holder,
-          clicksChannel,
-          clicksChannel,
-          clicksChannel
+          clicksFlow,
+          clicksFlow,
+          clicksFlow
         )
         if (appConfig.isDebug) {
           item.detailKey?.let { key ->
@@ -266,7 +270,8 @@ class ServiceFragment :
               "detailKey" to key,
               "detailTitle" to item.title
             )
-            val targetProvider = fragmentCreators[service.meta().deeplinkFragment] ?: error("No deeplink for $key")
+            val targetProvider = fragmentCreators[service.meta().deeplinkFragment]
+              ?: error("No deeplink for $key")
             holder.setLongClickHandler {
               detailDisplayer.showDetail { page, fragmentManager ->
                 detailDisplayed = true
@@ -576,7 +581,9 @@ class ServiceFragment :
   }
 
   private class TextAdapter(
-    private val bindDelegate: (CatchUpItem, CatchUpItemViewHolder, clicksChannel: SendChannel<UrlMeta>) -> Unit
+    private val bindDelegate: (CatchUpItem, CatchUpItemViewHolder, clicksFlow: (UrlMeta) -> Boolean)
+    ->
+    Unit
   ) :
     DisplayableItemAdapter<CatchUpItem, ViewHolder>() {
 
@@ -618,7 +625,7 @@ class ServiceFragment :
       when (getItemViewType(position)) {
         TYPE_ITEM ->
           try {
-            bindDelegate(data[position], holder as CatchUpItemViewHolder, clicksChannel())
+            bindDelegate(data[position], holder as CatchUpItemViewHolder, clicksReceiver())
           } catch (error: Exception) {
             e(error) { "Bind delegate failure!" }
           }

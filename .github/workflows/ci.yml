@@ -42,6 +42,6 @@ jobs:
         with:
           name: error-report
           path: build-reports.zip
-#      - name: Upload alpha APK to play store (master only)
+#      - name: Upload alpha APK to play store (main only)
 #        run: CATCHUP_SIGNING_ENCRYPT_KEY=${{ secrets.CatchupSigningEncryptKey }} CATCHUP_P12_ENCRYPT_KEY=${{ secrets.CatchupP12EncryptKey }} ./createRelease.sh
-#        if: success() && github.ref == 'refs/heads/master' && github.event_name != 'pull_request' && matrix.java_version == '11'
+#        if: success() && github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && matrix.java_version == '11'

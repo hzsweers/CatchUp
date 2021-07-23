@@ -25,7 +25,6 @@ apply {
 }
 
 dependencies {
-  kapt(deps.android.androidx.room.xerial)
   kapt(deps.android.androidx.room.apt)
 
   implementation(deps.kotlin.coroutinesAndroid)

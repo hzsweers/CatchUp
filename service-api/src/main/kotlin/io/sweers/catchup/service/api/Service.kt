@@ -24,9 +24,10 @@ interface Service {
   fun bindItemView(
     item: CatchUpItem,
     holder: BindableCatchUpItemViewHolder,
-    clicksChannel: SendChannel<UrlMeta>,
-    markClicksChannel: SendChannel<UrlMeta>,
-    longClicksChannel: SendChannel<UrlMeta>
+    clicksReceiver: (UrlMeta) -> Boolean,
+    markClicksReceiver: (UrlMeta) -> Boolean,
+    longClicksReceiver: (UrlMeta) -> Boolean
   )
+
   fun rootService(): Service = this
 }

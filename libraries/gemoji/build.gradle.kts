@@ -34,7 +34,6 @@ kapt {
 dependencies {
   implementation(project(":libraries:util"))
 
-  kapt(deps.android.androidx.room.xerial)
   kapt(deps.android.androidx.room.apt)
   kapt(deps.dagger.apt.compiler)
   compileOnly(deps.misc.jsr250)

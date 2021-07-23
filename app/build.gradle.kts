@@ -401,7 +401,6 @@ dependencies {
   implementation(deps.android.androidx.room.runtime)
   implementation(deps.android.androidx.room.rxJava2)
   implementation(deps.android.androidx.room.ktx)
-  kapt(deps.android.androidx.room.xerial)
   kapt(deps.android.androidx.room.apt)
 
   // Compose

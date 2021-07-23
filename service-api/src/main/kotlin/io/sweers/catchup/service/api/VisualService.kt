@@ -18,15 +18,14 @@ package io.sweers.catchup.service.api
 import android.content.res.Configuration
 import android.view.View.OnClickListener
 import androidx.core.content.ContextCompat
-import kotlinx.coroutines.channels.SendChannel
 
 interface VisualService : Service {
   override fun bindItemView(
     item: CatchUpItem,
     holder: BindableCatchUpItemViewHolder,
-    clicksChannel: SendChannel<UrlMeta>,
-    markClicksChannel: SendChannel<UrlMeta>,
-    longClicksChannel: SendChannel<UrlMeta>
+    clicksReceiver: (UrlMeta) -> Boolean,
+    markClicksReceiver: (UrlMeta) -> Boolean,
+    longClicksReceiver: (UrlMeta) -> Boolean
   ) {
     val context = holder.itemView().context
     val accentColor = ContextCompat.getColor(context, meta().themeColor)
@@ -53,7 +52,7 @@ interface VisualService : Service {
               image = holder.itemView()
             )
           )
-          clicksChannel.trySend(urlMeta).isSuccess
+          clicksReceiver(urlMeta)
         }
       }
     )

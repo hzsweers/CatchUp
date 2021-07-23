@@ -71,13 +71,14 @@ import kotlin.math.roundToLong
 internal class ImageAdapter(
   context: Context,
   spanCount: Int,
-  private val bindDelegate: (ImageItem, ImageHolder, clicksChannel: SendChannel<UrlMeta>) -> Unit
+  private val bindDelegate: (ImageItem, ImageHolder, clicksReceiver: (UrlMeta) -> Boolean) -> Unit
 ) :
   DisplayableItemAdapter<ImageItem, ViewHolder>(columnCount = spanCount),
   DataLoadingSubject.DataLoadingCallbacks {
 
   companion object {
     const val PRELOAD_AHEAD_ITEMS = 6
+
     @ColorInt
     private const val INITIAL_GIF_BADGE_COLOR = 0x40ffffff
   }
@@ -142,10 +143,10 @@ internal class ImageAdapter(
               // check if it's an event we care about, else bail fast
               val action = event.action
               if (!(
-                action == MotionEvent.ACTION_DOWN ||
-                  action == MotionEvent.ACTION_UP ||
-                  action == MotionEvent.ACTION_CANCEL
-                )
+                  action == MotionEvent.ACTION_DOWN ||
+                    action == MotionEvent.ACTION_UP ||
+                    action == MotionEvent.ACTION_CANCEL
+                  )
               ) {
                 return@setOnTouchListener false
               }
@@ -188,7 +189,7 @@ internal class ImageAdapter(
         }
         // TODO This is kind of ugly but not sure what else to do. Holder can't be an inner class to avoid mem leaks
         imageHolder.backingImageItem = imageItem
-        bindDelegate(imageItem, holder, clicksChannel())
+        bindDelegate(imageItem, holder, clicksReceiver())
           .also {
             holder.backingImageItem = null
           }

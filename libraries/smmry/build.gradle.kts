@@ -59,7 +59,6 @@ dependencies {
   implementation(deps.moshi.moshix.sealed.runtime)
   implementation(deps.android.androidx.room.runtime)
   implementation(deps.android.androidx.room.ktx)
-  kapt(deps.android.androidx.room.xerial)
   kapt(deps.android.androidx.room.apt)
   implementation(deps.android.androidx.lifecycle.ktx)
   implementation(deps.kotlin.coroutines)

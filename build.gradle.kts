@@ -45,12 +45,13 @@ buildscript {
 }
 
 plugins {
-  id("com.github.ben-manes.versions") version "0.38.0"
+  id("com.github.ben-manes.versions") version "0.39.0"
   id("catchup")
   id("com.osacky.doctor") version "0.7.0"
 }
 
 doctor {
+  warnWhenNotUsingParallelGC.set(false)
   javaHome {
     ensureJavaHomeMatches.set(false)
   }

@@ -18,11 +18,9 @@ package io.sweers.catchup.data
 import android.app.Application
 import android.util.Log
 import androidx.annotation.WorkerThread
-import io.sweers.catchup.flowbinding.safeOffer
-import kotlinx.coroutines.channels.BroadcastChannel
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.asFlow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.suspendCancellableCoroutine
 import okio.BufferedSink
 import okio.buffer
@@ -43,7 +41,7 @@ import kotlin.coroutines.resumeWithException
 class LumberYard @Inject constructor(private val app: Application) {
 
   private val entries = ArrayDeque<Entry>(BUFFER_SIZE + 1)
-  private val entryChannel = BroadcastChannel<Entry>(Channel.BUFFERED)
+  private val sharedFlow = MutableSharedFlow<Entry>()
 
   fun tree(): Timber.Tree {
     return object : Timber.DebugTree() {
@@ -60,12 +58,12 @@ class LumberYard @Inject constructor(private val app: Application) {
       entries.removeFirst()
     }
 
-    entryChannel.safeOffer(entry)
+    sharedFlow.tryEmit(entry)
   }
 
   fun bufferedLogs() = ArrayList(entries)
 
-  fun logs(): Flow<Entry> = entryChannel.asFlow()
+  fun logs(): Flow<Entry> = sharedFlow.asSharedFlow()
 
   /**
    * Save the current logs to disk.
